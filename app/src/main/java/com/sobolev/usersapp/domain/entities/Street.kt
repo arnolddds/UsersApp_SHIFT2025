@@ -1,7 +1,6 @@
 package com.sobolev.usersapp.domain.entities
 
-data class Name(
-    val title: String,
-    val first: String,
-    val last: String
+data class Street(
+    val number: Int,
+    val name: String
 )

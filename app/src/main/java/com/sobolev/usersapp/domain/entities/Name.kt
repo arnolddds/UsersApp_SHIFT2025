@@ -1,4 +1,7 @@
 package com.sobolev.usersapp.domain.entities
 
-class Name {
-}
+data class Name(
+    val title: String,
+    val first: String,
+    val last: String
+)

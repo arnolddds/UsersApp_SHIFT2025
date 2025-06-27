@@ -1,6 +1,7 @@
 package com.sobolev.usersapp.domain.entities
 
-data class Coordinates(
-    val latitude: String,
-    val longitude: String
+data class Picture(
+    val large: String,
+    val medium: String,
+    val thumbnail: String
 )
