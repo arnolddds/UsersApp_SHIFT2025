@@ -8,7 +8,6 @@ data class Location(
     val postcode: String,
     val coordinates: Coordinates
 ) {
-    // Форматированный адрес для UI
     val formattedAddress: String
         get() = "$street.number $street.name, $city, $state"
 }

@@ -1,6 +1,7 @@
 package com.sobolev.usersapp.domain.entities
 
 data class User(
+    val id: Int,
     val gender: String,
     val name: Name,
     val location: Location,
