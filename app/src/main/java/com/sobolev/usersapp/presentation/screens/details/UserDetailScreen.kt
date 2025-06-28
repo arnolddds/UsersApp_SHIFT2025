@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sobolev.usersapp.domain.entities.User
@@ -58,7 +59,9 @@ fun UserDetailsScreen(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text("User Details") },
+                title = {
+                    Title(title = "User details")
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -139,6 +142,20 @@ fun UserDetailsScreen(
             InfoItem(Icons.Default.Face, "Nationality", user.nat)
         }
     }
+}
+
+@Composable
+private fun Title(
+    modifier: Modifier = Modifier,
+    title: String
+) {
+    Text(
+        text = title,
+        fontSize = 24.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.onBackground
+    )
 }
 
 @Composable

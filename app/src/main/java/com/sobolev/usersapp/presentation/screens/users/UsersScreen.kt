@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -26,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,34 +45,43 @@ import com.sobolev.usersapp.presentation.ui.theme.UserColors
 fun UsersScreen(
     modifier: Modifier = Modifier,
     users: List<User>,
-    onUserClick: () -> Unit
+    onUserClick: (User) -> Unit
 ) {
     Scaffold(
-        modifier = modifier
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Title(
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        title = "All users"
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White,
+                    actionIconContentColor = MaterialTheme.colorScheme.onBackground
+                )
+
+            )
+        }
     ) { innerPadding ->
         LazyColumn(
             contentPadding = innerPadding
         ) {
             item {
-                Title(
-                    modifier = Modifier.padding(horizontal = 24.dp),
-                    title = "All users"
-                )
-            }
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = modifier.height(12.dp))
             }
             itemsIndexed(
                 items = users,
                 key = { _, user -> user.id }
-            ) {index, user ->
+            ) { index, user ->
                 UserCard(
                     modifier = modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                     user = user,
                     backgroundColor = UserColors[index % UserColors.size],
-                    onUserClick = onUserClick
+                    onUserClick = { onUserClick(user) }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -130,11 +139,12 @@ private fun UserCard(
                 )
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(24.dp))
 
 
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
             ) {
 
                 Text(
@@ -166,11 +176,6 @@ private fun UserCard(
                 )
             }
 
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "View details",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }
