@@ -22,9 +22,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshState
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,50 +57,61 @@ fun UsersScreen(
     val state by viewModel.screenState.collectAsState()
 
 
+    val refreshState = rememberPullToRefreshState()
+    val isRefreshing by remember {
+        mutableStateOf(false)
+    }
 
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Title(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        title = "All users"
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    actionIconContentColor = MaterialTheme.colorScheme.onBackground
-                )
-
-            )
+    PullToRefreshBox(
+        state = refreshState,
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            viewModel.refresh()
         }
-    ) { innerPadding ->
+    ) {
+        Scaffold(
+            modifier = modifier,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Title(
+                            modifier = Modifier.padding(horizontal = 24.dp),
+                            title = "All users"
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.White,
+                        actionIconContentColor = MaterialTheme.colorScheme.onBackground
+                    )
 
-
-        LazyColumn(
-            contentPadding = innerPadding
-        ) {
-            item {
-                Spacer(modifier = modifier.height(12.dp))
-            }
-            itemsIndexed(
-                items = state.allUsers,
-                key = { _, user -> user.id }
-            ) { index, user ->
-                UserCard(
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    user = user,
-                    backgroundColor = UserColors[index % UserColors.size],
-                    onUserClick = { onUserClick(user) }
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+            }
+        ) { innerPadding ->
+
+
+            LazyColumn(
+                contentPadding = innerPadding
+            ) {
+                item {
+                    Spacer(modifier = modifier.height(12.dp))
+                }
+                itemsIndexed(
+                    items = state.allUsers,
+                    key = { _, user -> user.id }
+                ) { index, user ->
+                    UserCard(
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        user = user,
+                        backgroundColor = UserColors[index % UserColors.size],
+                        onUserClick = { onUserClick(user) }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
         }
     }
-
 
 }
 
