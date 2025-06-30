@@ -2,8 +2,9 @@ package com.sobolev.usersapp.domain.usecases
 
 import com.sobolev.usersapp.domain.entities.User
 import com.sobolev.usersapp.domain.repository.UsersRepository
+import javax.inject.Inject
 
-class GetUserUseCase(
+class GetUserUseCase @Inject constructor(
     private val repository: UsersRepository
 ) {
 

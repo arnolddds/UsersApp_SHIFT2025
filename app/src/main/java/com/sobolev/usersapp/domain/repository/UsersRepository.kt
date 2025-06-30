@@ -9,4 +9,6 @@ interface UsersRepository {
 
     suspend fun getUser(userId: Int): User
 
+    suspend fun refreshUsers()
+
 }

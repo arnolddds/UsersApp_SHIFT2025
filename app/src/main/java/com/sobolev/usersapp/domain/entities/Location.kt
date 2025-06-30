@@ -5,9 +5,5 @@ data class Location(
     val city: String,
     val state: String,
     val country: String,
-    val postcode: String,
-    val coordinates: Coordinates
-) {
-    val formattedAddress: String
-        get() = "$street.number $street.name, $city, $state"
-}
+    val postcode: String
+)

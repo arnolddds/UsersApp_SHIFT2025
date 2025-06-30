@@ -9,8 +9,9 @@ data class User(
     val phone: String,
     val cell: String,
     val picture: Picture,
-    val nat: String
+    val nat: String,
+    val dob: String
 ) {
     val fullName: String
-        get() = "${name.title} ${name.first} ${name.last}"
+        get() = "${name.first} ${name.last}"
 }
