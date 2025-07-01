@@ -156,7 +156,7 @@ fun UserDetailsScreen(
                                 color = Grey300
                             )
                             Text(
-                                text = "@$currentState.user.login.username",
+                                text = "@${currentState.user.login.username}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
