@@ -13,7 +13,7 @@
 <div align="center">
   <img src="screenshots/list.png" width="30%" alt="Список пользователей">
   <img src="screenshots/details.png" width="30%" alt="Экран пользователя">
-  <img src="screenshots/intents.png" width="30%" alt="Открытие email/телефона/адреса">
+  <img src="screenshots/error.png" width="30%" alt="Обработка ошибки">
 </div>
 
 ---
