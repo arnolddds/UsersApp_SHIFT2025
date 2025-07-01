@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -59,6 +60,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import com.sobolev.usersapp.R
 import com.sobolev.usersapp.presentation.ui.theme.Blue100
 import com.sobolev.usersapp.presentation.ui.theme.Grey300
 import kotlinx.coroutines.launch
@@ -75,12 +77,8 @@ fun UserDetailsScreen(
         }
     )
 ) {
-
     val context = LocalContext.current
-
-
     val state = viewModel.state.collectAsState()
-
     val currentState = state.value
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -97,19 +95,13 @@ fun UserDetailsScreen(
         }
     }
 
-
-
-
-
     when (currentState) {
         is UserDetailState.Checking -> {
             Scaffold(
                 modifier = modifier,
                 topBar = {
                     TopAppBar(
-                        title = {
-                            Title(title = "User details")
-                        },
+                        title = { Title(title = stringResource(R.string.user_details)) },
                         navigationIcon = {
                             IconButton(
                                 onClick = {
@@ -118,7 +110,7 @@ fun UserDetailsScreen(
                             ) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back"
+                                    contentDescription = stringResource(R.string.back)
                                 )
                             }
                         },
@@ -126,7 +118,6 @@ fun UserDetailsScreen(
                             containerColor = Color.White,
                             actionIconContentColor = MaterialTheme.colorScheme.onBackground
                         )
-
                     )
                 }
             ) { paddingValues ->
@@ -139,7 +130,7 @@ fun UserDetailsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         AsyncImage(
                             model = currentState.user.picture.large,
-                            contentDescription = "User avatar",
+                            contentDescription = stringResource(R.string.user_avatar),
                             modifier = Modifier
                                 .size(90.dp)
                                 .clip(CircleShape)
@@ -161,21 +152,23 @@ fun UserDetailsScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "Age: ${currentState.user.dob} years",
+                                text = stringResource(
+                                    R.string.age_years,
+                                    currentState.user.dob.toIntOrNull() ?: 0
+                                ),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-
                         }
                     }
 
                     Spacer(Modifier.height(24.dp))
 
+                    SectionTitle(stringResource(R.string.contact_info))
 
-                    SectionTitle("Contact Information")
                     ClickableInfoItem(
                         icon = Icons.Default.Email,
-                        label = "Email",
+                        label = stringResource(R.string.email),
                         value = currentState.user.email
                     ) {
                         val intent = Intent(Intent.ACTION_SENDTO).apply {
@@ -188,10 +181,9 @@ fun UserDetailsScreen(
                         }
                     }
 
-
                     ClickableInfoItem(
                         icon = Icons.Default.Phone,
-                        label = "Phone",
+                        label = stringResource(R.string.phone),
                         value = currentState.user.phone
                     ) {
                         val intent = Intent(Intent.ACTION_DIAL).apply {
@@ -204,17 +196,14 @@ fun UserDetailsScreen(
                         }
                     }
 
+                    SectionTitle(stringResource(R.string.address))
 
-
-                    SectionTitle("Address")
-                    val fullAddress =
-                        "${currentState.user.location.street.number} ${currentState.user.location.street.name}, " +
-                                "${currentState.user.location.city}, ${currentState.user.location.state}, ${currentState.user.location.country}"
-
+                    val fullAddress = "${currentState.user.location.street.number} ${currentState.user.location.street.name}, " +
+                            "${currentState.user.location.city}, ${currentState.user.location.state}, ${currentState.user.location.country}"
 
                     ClickableInfoItem(
                         icon = Icons.Default.LocationOn,
-                        label = "Address",
+                        label = stringResource(R.string.address),
                         value = fullAddress
                     ) {
                         val geoUri = "geo:0,0?q=${Uri.encode(fullAddress)}"
@@ -226,27 +215,25 @@ fun UserDetailsScreen(
                         }
                     }
 
-                    InfoItem(Icons.Default.Lock, "City", currentState.user.location.city)
+                    InfoItem(Icons.Default.Lock, stringResource(R.string.city), currentState.user.location.city)
                     InfoItem(
-                        Icons.Default.Home, "State/Country",
+                        Icons.Default.Home,
+                        stringResource(R.string.state_country),
                         "${currentState.user.location.state}, ${currentState.user.location.country}"
                     )
                     InfoItem(
                         Icons.Default.MarkunreadMailbox,
-                        "Postcode",
+                        stringResource(R.string.postcode),
                         currentState.user.location.postcode
                     )
 
-                    SectionTitle("Additional Info")
-                    InfoItem(Icons.Default.Person, "Gender", currentState.user.gender)
-                    InfoItem(Icons.Default.Face, "Nationality", currentState.user.nat)
-                    InfoItem(Icons.Default.HowToReg, "Registered", currentState.user.registered.date)
+                    SectionTitle(stringResource(R.string.additional_info))
+                    InfoItem(Icons.Default.Person, stringResource(R.string.gender), currentState.user.gender)
+                    InfoItem(Icons.Default.Face, stringResource(R.string.nationality), currentState.user.nat)
+                    InfoItem(Icons.Default.HowToReg, stringResource(R.string.registered), currentState.user.registered.date)
                 }
-
-
             }
         }
-
 
         UserDetailState.Finished -> {
             LaunchedEffect(key1 = Unit) {
@@ -255,21 +242,20 @@ fun UserDetailsScreen(
         }
 
         UserDetailState.Initial -> {}
+
         is UserDetailState.Error -> {
             Scaffold(
                 snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                 topBar = {
                     TopAppBar(
-                        title = {
-                            Title(title = "Error")
-                        },
+                        title = { Title(title = stringResource(R.string.error)) },
                         navigationIcon = {
                             IconButton(onClick = {
                                 viewModel.processCommand(UserDetailCommand.Back)
                             }) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back"
+                                    contentDescription = stringResource(R.string.back)
                                 )
                             }
                         },
@@ -284,17 +270,16 @@ fun UserDetailsScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Failed to load user",
+                        text = stringResource(R.string.failed_to_load_user),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
             }
         }
-
     }
-
 }
+
 
 
 @Composable

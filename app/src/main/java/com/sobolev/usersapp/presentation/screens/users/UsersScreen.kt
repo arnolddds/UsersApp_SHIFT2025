@@ -42,12 +42,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import com.sobolev.usersapp.R
 import com.sobolev.usersapp.domain.entities.User
 import com.sobolev.usersapp.presentation.ui.theme.Blue100
 import com.sobolev.usersapp.presentation.ui.theme.UserColors
@@ -61,9 +63,7 @@ fun UsersScreen(
     onUserClick: (User) -> Unit,
     viewModel: UsersViewModel = hiltViewModel()
 ) {
-
     val state by viewModel.screenState.collectAsState()
-
 
     val refreshState = rememberPullToRefreshState()
     val isRefreshing = state.isLoading
@@ -83,8 +83,6 @@ fun UsersScreen(
         }
     }
 
-
-
     PullToRefreshBox(
         state = refreshState,
         isRefreshing = isRefreshing,
@@ -99,7 +97,7 @@ fun UsersScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "All users",
+                            text = stringResource(R.string.all_users),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 24.dp),
@@ -110,11 +108,9 @@ fun UsersScreen(
                         containerColor = Color.White,
                         actionIconContentColor = MaterialTheme.colorScheme.onBackground
                     )
-
                 )
             }
         ) { innerPadding ->
-
 
             LazyColumn(
                 contentPadding = innerPadding
@@ -139,8 +135,8 @@ fun UsersScreen(
             }
         }
     }
-
 }
+
 
 
 @Composable
