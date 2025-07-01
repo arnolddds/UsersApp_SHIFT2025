@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.net.UnknownHostException
 import javax.inject.Inject
 
 
@@ -28,6 +29,7 @@ class UsersViewModel @Inject constructor(
         observeUsers()
     }
 
+
     private fun observeUsers() {
         viewModelScope.launch {
             getAllUsersUseCase()
@@ -35,41 +37,69 @@ class UsersViewModel @Inject constructor(
                     _screenState.update { it.copy(isLoading = true, error = null) }
                 }
                 .catch { e ->
+                    val friendlyMessage = when {
+                        e is UnknownHostException -> "No internet connection"
+                        else -> "Error loading users"
+                    }
+
                     _screenState.update {
-                        it.copy(error = e.message ?: "Ошибка загрузки", isLoading = false)
+                        it.copy(error = friendlyMessage, isLoading = false)
                     }
                 }
+
                 .collect { users ->
+                    val shouldRefresh = users.isEmpty() && _screenState.value.isRefreshing.not()
+
+                    val errorMessage = if (users.isEmpty() && !_screenState.value.isRefreshing) {
+                        "The user list is empty. Check your network connection."
+                    } else null
+
                     _screenState.update {
-                        it.copy(allUsers = users, isLoading = false, error = null)
+                        it.copy(
+                            allUsers = users,
+                            isLoading = false,
+                            error = errorMessage
+                        )
                     }
 
-
-                    if (users.isEmpty()) {
+                    if (shouldRefresh) {
                         refresh()
                     }
                 }
+
         }
     }
-
 
     fun refresh() {
         viewModelScope.launch {
+            _screenState.update { it.copy(isRefreshing = true, error = null) }
+
             try {
-                _screenState.update { it.copy(isLoading = true, error = null) }
                 refreshUsersUseCase()
             } catch (e: Exception) {
-                _screenState.update { it.copy(error = e.message ?: "Ошибка обновления") }
+                val friendlyMessage = when {
+                    e is UnknownHostException -> "No internet connection"
+                    else -> "Error loading users"
+                }
+
+                _screenState.update {
+                    it.copy(error = friendlyMessage)
+                }
             } finally {
-                _screenState.update { it.copy(isLoading = false) }
+                _screenState.update { it.copy(isRefreshing = false) }
             }
+
         }
     }
+
+
 }
 
 
 data class UsersScreenState(
     val allUsers: List<User> = listOf(),
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val error: String? = null
 )
+

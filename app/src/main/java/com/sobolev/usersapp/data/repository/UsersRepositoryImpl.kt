@@ -29,12 +29,11 @@ class UsersRepositoryImpl @Inject constructor(
     }
 
     override suspend fun refreshUsers() {
-        val remoteUsers = apiService.getAllUsers(5).results
+        val remoteUsers = apiService.getAllUsers(50).results
         val dbModels = remoteUsers.map { it.toDbModel() }
         usersDao.clearAll()
         usersDao.insertAll(dbModels)
     }
-
 
 }
 

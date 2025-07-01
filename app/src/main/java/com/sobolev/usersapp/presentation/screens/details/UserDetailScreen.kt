@@ -1,9 +1,16 @@
 package com.sobolev.usersapp.presentation.screens.details
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,36 +24,44 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.HowToReg
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.MarkunreadMailbox
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.sobolev.usersapp.presentation.ui.theme.Blue100
 import com.sobolev.usersapp.presentation.ui.theme.Grey300
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,14 +72,34 @@ fun UserDetailsScreen(
     viewModel: UserDetailViewModel = hiltViewModel(
         creationCallback = { factory: UserDetailViewModel.Factory ->
             factory.create(userId)
-
         }
     )
 ) {
 
+    val context = LocalContext.current
+
+
     val state = viewModel.state.collectAsState()
 
     val currentState = state.value
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(currentState) {
+        if (currentState is UserDetailState.Error) {
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = currentState.message,
+                    actionLabel = "OK"
+                )
+            }
+        }
+    }
+
+
+
+
 
     when (currentState) {
         is UserDetailState.Checking -> {
@@ -76,7 +111,11 @@ fun UserDetailsScreen(
                             Title(title = "User details")
                         },
                         navigationIcon = {
-                            IconButton(onClick = onFinished) {
+                            IconButton(
+                                onClick = {
+                                    viewModel.processCommand(UserDetailCommand.Back)
+                                }
+                            ) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Back"
@@ -95,7 +134,7 @@ fun UserDetailsScreen(
                     modifier = Modifier
                         .padding(paddingValues)
                         .verticalScroll(rememberScrollState())
-                        .padding(16.dp)
+                        .padding(16.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         AsyncImage(
@@ -117,7 +156,7 @@ fun UserDetailsScreen(
                                 color = Grey300
                             )
                             Text(
-                                text = "@${currentState.user.fullName}",
+                                text = "@$currentState.user.login.username",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -134,43 +173,128 @@ fun UserDetailsScreen(
 
 
                     SectionTitle("Contact Information")
-                    InfoItem(Icons.Default.Email, "Email", currentState.user.email)
-                    InfoItem(Icons.Default.Phone, "Phone", currentState.user.phone)
+                    ClickableInfoItem(
+                        icon = Icons.Default.Email,
+                        label = "Email",
+                        value = currentState.user.email
+                    ) {
+                        val intent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = "mailto:${currentState.user.email}".toUri()
+                        }
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: ActivityNotFoundException) {
+                            Toast.makeText(context, "No email app found", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+
+                    ClickableInfoItem(
+                        icon = Icons.Default.Phone,
+                        label = "Phone",
+                        value = currentState.user.phone
+                    ) {
+                        val intent = Intent(Intent.ACTION_DIAL).apply {
+                            data = "tel:${currentState.user.phone}".toUri()
+                        }
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: ActivityNotFoundException) {
+                            Toast.makeText(context, "No phone app found", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
 
 
                     SectionTitle("Address")
-                    InfoItem(
-                        Icons.Default.LocationOn, "Street",
-                        "${currentState.user.location.street.number} ${currentState.user.location.street.name}"
-                    )
+                    val fullAddress =
+                        "${currentState.user.location.street.number} ${currentState.user.location.street.name}, " +
+                                "${currentState.user.location.city}, ${currentState.user.location.state}, ${currentState.user.location.country}"
+
+
+                    ClickableInfoItem(
+                        icon = Icons.Default.LocationOn,
+                        label = "Address",
+                        value = fullAddress
+                    ) {
+                        val geoUri = "geo:0,0?q=${Uri.encode(fullAddress)}"
+                        val intent = Intent(Intent.ACTION_VIEW, geoUri.toUri())
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: ActivityNotFoundException) {
+                            Toast.makeText(context, "No card app found", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
                     InfoItem(Icons.Default.Lock, "City", currentState.user.location.city)
                     InfoItem(
                         Icons.Default.Home, "State/Country",
                         "${currentState.user.location.state}, ${currentState.user.location.country}"
                     )
-                    InfoItem(Icons.Default.ThumbUp, "Postcode", currentState.user.location.postcode)
+                    InfoItem(
+                        Icons.Default.MarkunreadMailbox,
+                        "Postcode",
+                        currentState.user.location.postcode
+                    )
 
                     SectionTitle("Additional Info")
                     InfoItem(Icons.Default.Person, "Gender", currentState.user.gender)
-                    InfoItem(
-                        Icons.Default.Notifications, "ID",
-                        "${currentState.user.id}: ${currentState.user.id}"
-                    )
                     InfoItem(Icons.Default.Face, "Nationality", currentState.user.nat)
+                    InfoItem(Icons.Default.HowToReg, "Registered", currentState.user.registered.date)
                 }
+
+
             }
         }
+
 
         UserDetailState.Finished -> {
             LaunchedEffect(key1 = Unit) {
                 onFinished()
             }
         }
+
         UserDetailState.Initial -> {}
+        is UserDetailState.Error -> {
+            Scaffold(
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Title(title = "Error")
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = {
+                                viewModel.processCommand(UserDetailCommand.Back)
+                            }) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back"
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                    )
+                }
+            ) { paddingValues ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Failed to load user",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        }
+
     }
 
 }
-
 
 
 @Composable
@@ -205,8 +329,6 @@ private fun InfoItem(
     value: String,
     modifier: Modifier = Modifier
 ) {
-
-
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -216,21 +338,48 @@ private fun InfoItem(
         Icon(
             imageVector = icon,
             contentDescription = label,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(24.dp)
         )
-        Spacer(Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Text(text = label, style = MaterialTheme.typography.labelSmall)
+            Text(text = value, style = MaterialTheme.typography.bodyLarge)
+        }
+    }
+}
+
+@Composable
+fun ClickableInfoItem(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(text = label, style = MaterialTheme.typography.labelSmall)
             Text(
                 text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline
+                ),
+                modifier = Modifier.clickable { onClick() }
             )
         }
     }
 }
+

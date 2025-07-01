@@ -1,36 +1,26 @@
 package com.sobolev.usersapp.data.mapper
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.sobolev.usersapp.data.local.models.LocationDbModel
+import com.sobolev.usersapp.data.local.models.LoginDbModel
 import com.sobolev.usersapp.data.local.models.NameDbModel
 import com.sobolev.usersapp.data.local.models.PictureDbModel
+import com.sobolev.usersapp.data.local.models.RegistrationDateDbModel
 import com.sobolev.usersapp.data.local.models.StreetDbModel
 import com.sobolev.usersapp.data.local.models.UserDbModel
 import com.sobolev.usersapp.data.network.dto.LocationDto
+import com.sobolev.usersapp.data.network.dto.LoginDto
 import com.sobolev.usersapp.data.network.dto.NameDto
 import com.sobolev.usersapp.data.network.dto.PictureDto
+import com.sobolev.usersapp.data.network.dto.RegistrationDateDto
 import com.sobolev.usersapp.data.network.dto.StreetDto
 import com.sobolev.usersapp.data.network.dto.UserDto
-import com.sobolev.usersapp.domain.entities.Location
-import com.sobolev.usersapp.domain.entities.Name
-import com.sobolev.usersapp.domain.entities.Picture
-import com.sobolev.usersapp.domain.entities.Street
-import com.sobolev.usersapp.domain.entities.User
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
-fun UserDto.toDomain(): User {
-    return User(
-        id = email.hashCode(),
-        gender = gender,
-        name = name.toDomain(),
-        location = location.toDomain(),
-        email = email,
-        phone = phone,
-        cell = cell,
-        picture = picture.toDomain(),
-        nat = nationality,
-        dob = dob?.age.toString()
-    )
-}
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun UserDto.toDbModel(): UserDbModel {
     return UserDbModel(
         id = email.hashCode(),
@@ -42,18 +32,26 @@ fun UserDto.toDbModel(): UserDbModel {
         cell = cell,
         picture = picture.toDbModel(),
         nat = nationality,
-        dob = dob?.age.toString()
+        dob = dob?.age.toString(),
+        login = login.toDbModel(),
+        registered = registered.toDbModel()
     )
 }
 
-fun NameDto.toDomain(): Name {
-    return Name(
-        title = title,
-        first = first,
-        last = last
+@RequiresApi(Build.VERSION_CODES.O)
+fun RegistrationDateDto.toDbModel(): RegistrationDateDbModel {
+    return RegistrationDateDbModel(
+        date = formatDate(date),
+        age = age
     )
 }
 
+
+fun LoginDto.toDbModel(): LoginDbModel {
+    return LoginDbModel(
+        username = username
+    )
+}
 fun NameDto.toDbModel(): NameDbModel {
     return NameDbModel(
         title = title,
@@ -62,15 +60,6 @@ fun NameDto.toDbModel(): NameDbModel {
     )
 }
 
-fun LocationDto.toDomain(): Location {
-    return Location(
-        street = street.toDomain(),
-        city = city,
-        state = state,
-        country = country,
-        postcode = postcode
-    )
-}
 
 fun LocationDto.toDbModel(): LocationDbModel {
     return LocationDbModel(
@@ -83,12 +72,6 @@ fun LocationDto.toDbModel(): LocationDbModel {
 }
 
 
-fun StreetDto.toDomain(): Street {
-    return Street(
-        number = number,
-        name = name
-    )
-}
 
 fun StreetDto.toDbModel(): StreetDbModel {
     return StreetDbModel(
@@ -98,20 +81,21 @@ fun StreetDto.toDbModel(): StreetDbModel {
 }
 
 
-fun PictureDto.toDomain(): Picture {
-    return Picture(
-        large = large,
-        medium = medium,
-        thumbnail = thumbnail
-    )
-}
-
 fun PictureDto.toDbModel(): PictureDbModel {
     return PictureDbModel(
         large = large,
         medium = medium,
         thumbnail = thumbnail
     )
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun formatDate(dateString: String): String {
+    val inputFormatter = DateTimeFormatter.ISO_ZONED_DATE_TIME
+    val outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    val parsedDate = ZonedDateTime.parse(dateString, inputFormatter)
+    return parsedDate.format(outputFormatter)
 }
 
 

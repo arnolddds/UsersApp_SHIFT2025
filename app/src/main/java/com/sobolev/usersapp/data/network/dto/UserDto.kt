@@ -12,5 +12,6 @@ data class UserDto(
     @SerializedName("picture") val picture: PictureDto,
     @SerializedName("nat") val nationality: String,
     @SerializedName("dob") val dob: DateOfBirthDto? = null,
-    @SerializedName("registered") val registered: RegistrationDateDto? = null,
+    @SerializedName("registered") val registered: RegistrationDateDto,
+    @SerializedName("login") val login: LoginDto
 )

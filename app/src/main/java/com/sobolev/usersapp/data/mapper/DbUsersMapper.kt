@@ -1,13 +1,17 @@
 package com.sobolev.usersapp.data.mapper
 
 import com.sobolev.usersapp.data.local.models.LocationDbModel
+import com.sobolev.usersapp.data.local.models.LoginDbModel
 import com.sobolev.usersapp.data.local.models.NameDbModel
 import com.sobolev.usersapp.data.local.models.PictureDbModel
+import com.sobolev.usersapp.data.local.models.RegistrationDateDbModel
 import com.sobolev.usersapp.data.local.models.StreetDbModel
 import com.sobolev.usersapp.data.local.models.UserDbModel
 import com.sobolev.usersapp.domain.entities.Location
+import com.sobolev.usersapp.domain.entities.Login
 import com.sobolev.usersapp.domain.entities.Name
 import com.sobolev.usersapp.domain.entities.Picture
+import com.sobolev.usersapp.domain.entities.Registration
 import com.sobolev.usersapp.domain.entities.Street
 import com.sobolev.usersapp.domain.entities.User
 
@@ -22,7 +26,21 @@ fun UserDbModel.toDomain(): User {
         cell = cell,
         picture = picture.toDomain(),
         nat = nat,
-        dob = dob
+        dob = dob,
+        login = login.toDomain(),
+        registered = registered.toDomain()
+    )
+}
+
+fun RegistrationDateDbModel.toDomain(): Registration {
+    return Registration(
+        date = date,
+        age = age
+    )
+}
+fun LoginDbModel.toDomain(): Login {
+    return Login(
+        username = username
     )
 }
 

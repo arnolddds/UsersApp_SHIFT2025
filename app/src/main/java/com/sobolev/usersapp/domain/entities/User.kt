@@ -10,7 +10,9 @@ data class User(
     val cell: String,
     val picture: Picture,
     val nat: String,
-    val dob: String
+    val dob: String,
+    val login: Login,
+    val registered: Registration
 ) {
     val fullName: String
         get() = "${name.first} ${name.last}"

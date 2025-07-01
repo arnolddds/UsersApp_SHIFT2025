@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.util.concurrent.TimeoutException
 
 
 @HiltViewModel(assistedFactory = UserDetailViewModel.Factory::class)
@@ -32,12 +35,19 @@ class UserDetailViewModel @AssistedInject constructor(
 
     init {
         viewModelScope.launch {
-            _state.update {
+            try {
                 val user = getUserUseCase(userId)
-                UserDetailState.Checking(user)
+                _state.update {
+                    UserDetailState.Checking(user)
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    UserDetailState.Error(e.toUserFriendlyMessage())
+                }
             }
         }
     }
+
 
     fun processCommand(command: UserDetailCommand) {
         when (command) {
@@ -49,6 +59,13 @@ class UserDetailViewModel @AssistedInject constructor(
         }
     }
 
+    private fun Throwable.toUserFriendlyMessage(): String = when (this) {
+        is UnknownHostException -> "No internet"
+        is TimeoutException, is SocketTimeoutException -> "Server is not responding"
+        else -> "There was an error getting the user"
+    }
+
+
 
 }
 
@@ -58,13 +75,8 @@ sealed interface UserDetailCommand {
 }
 
 sealed interface UserDetailState {
-
     data object Initial : UserDetailState
-
-    data class Checking(
-        val user: User
-    ) : UserDetailState
-
+    data class Checking(val user: User) : UserDetailState
+    data class Error(val message: String) : UserDetailState
     data object Finished : UserDetailState
-
 }

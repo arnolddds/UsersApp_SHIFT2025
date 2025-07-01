@@ -2,7 +2,6 @@ package com.sobolev.usersapp.di
 
 import android.content.Context
 import androidx.room.Room
-import androidx.room.RoomDatabase
 import com.sobolev.usersapp.data.local.db.UsersDao
 import com.sobolev.usersapp.data.local.db.UsersDataBase
 import com.sobolev.usersapp.data.repository.UsersRepositoryImpl

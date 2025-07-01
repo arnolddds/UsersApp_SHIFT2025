@@ -17,5 +17,7 @@ data class UserDbModel(
     val cell: String,
     @Embedded val picture: PictureDbModel,
     val nat: String,
-    val dob: String
+    val dob: String,
+    @Embedded val login: LoginDbModel,
+    @Embedded val registered: RegistrationDateDbModel,
 )

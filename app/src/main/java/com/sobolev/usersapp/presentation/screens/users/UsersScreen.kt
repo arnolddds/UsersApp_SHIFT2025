@@ -15,7 +15,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -23,16 +23,19 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +51,7 @@ import coil3.compose.AsyncImage
 import com.sobolev.usersapp.domain.entities.User
 import com.sobolev.usersapp.presentation.ui.theme.Blue100
 import com.sobolev.usersapp.presentation.ui.theme.UserColors
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,9 +66,24 @@ fun UsersScreen(
 
 
     val refreshState = rememberPullToRefreshState()
-    val isRefreshing by remember {
-        mutableStateOf(false)
+    val isRefreshing = state.isLoading
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(state.error) {
+        state.error?.let { errorMessage ->
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "$errorMessage Try restarting the application " +
+                            "or check your internet connection.",
+                    actionLabel = "ОК"
+                )
+            }
+        }
     }
+
+
 
     PullToRefreshBox(
         state = refreshState,
@@ -75,12 +94,16 @@ fun UsersScreen(
     ) {
         Scaffold(
             modifier = modifier,
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
                 TopAppBar(
                     title = {
-                        Title(
+                        Text(
+                            text = "All users",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 24.dp),
-                            title = "All users"
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -119,19 +142,6 @@ fun UsersScreen(
 
 }
 
-@Composable
-private fun Title(
-    modifier: Modifier = Modifier,
-    title: String
-) {
-    Text(
-        text = title,
-        fontSize = 24.sp,
-        fontWeight = FontWeight.Bold,
-        modifier = modifier,
-        color = MaterialTheme.colorScheme.onBackground
-    )
-}
 
 @Composable
 private fun UserCard(
@@ -184,7 +194,7 @@ private fun UserCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 InfoItem(
-                    Icons.Default.Map,
+                    Icons.Default.LocationOn,
                     "${user.location.street.number} ${user.location.street.name}, ${user.location.city}"
                 )
 
@@ -206,7 +216,6 @@ private fun InfoItem(
     value: String,
     modifier: Modifier = Modifier
 ) {
-
 
     Row(
         modifier = modifier
